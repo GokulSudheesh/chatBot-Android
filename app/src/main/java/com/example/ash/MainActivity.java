@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,11 +20,14 @@ public class MainActivity extends AppCompatActivity {
     private recyclerAdapter adapter;
     private ImageButton sendButton;
     private EditText msgInput;
+    private getRequest request;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        request = new getRequest(this);
 
         recyclerView = findViewById(R.id.recyclerView);
         // Set RecyclerView layout manager.
@@ -49,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                     adapter.notifyItemInserted(newPosition);
                     recyclerView.scrollToPosition(newPosition);
                     msgInput.setText("");
-                    getRespose(message);
+                    getReply(message);
                 }
             }
         });
@@ -57,10 +61,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getRespose(String message) {
-        messages.add(new Message(false, message));
-        int newPosition = messages.size() - 1;
-        adapter.notifyItemInserted(newPosition);
-        recyclerView.scrollToPosition(newPosition);
+    private void getReply(String message) {
+        request.getResponse(message, new getRequest.VolleyResponseListener() {
+            @Override
+            public void onError(String message) {
+                Log.d("REQUEST ERROR", message);
+            }
+
+            @Override
+            public void onResponse(String reply) {
+                messages.add(new Message(false, reply));
+                int newPosition = messages.size() - 1;
+                adapter.notifyItemInserted(newPosition);
+                recyclerView.scrollToPosition(newPosition);
+            }
+        });
+
     }
 }
